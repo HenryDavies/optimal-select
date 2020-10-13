@@ -148,6 +148,8 @@ function findAttributesPattern (priority, element, ignore) {
     return currPos - nextPos
   })
 
+  let whitespacePattern;
+
   for (var i = 0, l = sortedKeys.length; i < l; i++) {
     const key = sortedKeys[i]
     const attribute = attributes[key]
@@ -162,6 +164,14 @@ function findAttributesPattern (priority, element, ignore) {
 
     var pattern = `[${attributeName}="${attributeValue}"]`
 
+    if (!attributeValue.trim()) {
+      // Value is just white space - use as pattern if no other alternatives
+      if (!whitespacePattern) {
+        whitespacePattern = pattern;
+      }
+      continue;
+    }
+
     if ((/\b\d/).test(attributeValue) === false) {
       if (attributeName === 'id') {
         pattern = `#${attributeValue}`
@@ -169,15 +179,13 @@ function findAttributesPattern (priority, element, ignore) {
 
       if (attributeName === 'class') {
         const className = attributeValue.trim().replace(/\s+/g, '.')
-        if (className) {
-          pattern = `.${className}`;
-        }
+        pattern = `.${className}`;
       }
     }
 
     return pattern
   }
-  return null
+  return whitespacePattern || null
 }
 
 /**
